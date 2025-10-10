@@ -6,8 +6,23 @@
     <title>Unity Web Player | WealthWars</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
+  <div id="g_id_onload"
+       data-client_id="626479572817-t4cpnar6sgqgaupck5cjkafnk5gmbft5.apps.googleusercontent.com"
+       data-callback="onGoogleSignIn"
+       data-auto_select="false">
+  </div>
+
+  <div class="g_id_signin"
+       data-type="standard"
+       data-size="large"
+       data-theme="outline"
+       data-text="sign_in_with"
+       data-shape="rectangular"
+       data-logo_alignment="left">
+  </div>
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
       <div id="unity-loading-bar">
@@ -110,12 +125,14 @@
 
       document.querySelector("#unity-loading-bar").style.display = "block";
 
+      var uInstance;
       var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
               }).then((unityInstance) => {
+                uInstance = unityInstance;
                 document.querySelector("#unity-loading-bar").style.display = "none";
                 document.querySelector("#unity-fullscreen-button").onclick = () => {
                   unityInstance.SetFullscreen(1);
@@ -127,6 +144,15 @@
             };
 
       document.body.appendChild(script);
+
+      function onGoogleSignIn(response) {
+        if (uInstance) {
+          uInstance.SendMessage("Game", "OnGoogleSignIn", response.credential);
+        } else {
+          console.warn("Unity not ready yet, retrying...");
+          setTimeout(() => onGoogleSignIn(response), 500);
+        }
+      }
 
     </script>
   </body>
